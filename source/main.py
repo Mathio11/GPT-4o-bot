@@ -1,16 +1,15 @@
 import os
 import json
-
 import openai
 import streamlit as st
+from openai import OpenAI
 
 # Directory and Key Setup
 working_dir = os.path.dirname(os.path.abspath(__file__))
 config_data = json.load(open(f"{working_dir}/config.json"))
 
-OPENAI_API_KEY = config_data["OPENAI_API_KEY"]
-openai.api_key = OPENAI_API_KEY  #this repteated variables for easy integration of keys by others
-
+# Initialize OpenAI client - this allows easy integration of keys by others
+client = OpenAI(api_key=config_data["OPENAI_API_KEY"])
 
 # Steamlit page setup
 st.set_page_config(
@@ -19,11 +18,9 @@ st.set_page_config(
     layout="wide"
 )
 
-
 # Initialization and saving of history
-if "chat_hist" not in st.session_state: #session_state is an inbuilt fuction in streamlit to check the current state of the session
+if "chat_hist" not in st.session_state: #session_state is an inbuilt function in streamlit to check the current state of the session
     st.session_state.chat_hist = []
-
 
 # Page title
 st.title("🤖 GPT 4o Bot")
@@ -33,30 +30,29 @@ for message in st.session_state.chat_hist:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-
-
 # Input field for user
 user_prompt = st.chat_input("Ask GPT 4o")
 
 if user_prompt:
     # Users message added to chat and displayed 
     st.chat_message("user").markdown(user_prompt)
-    st.session_state.chat_hist.append({"role" : "user", 
-                                       "content" : user_prompt})  #adding user prompts to the chat history
+    st.session_state.chat_hist.append({"role": "user", "content": user_prompt})  #adding user prompts to the chat history
     
+
     # Sending users message to GPT and getting back response
-    response = openai.Completion.create(
-        model="gpt-4",
+    response = client.chat.completions.create(
+        model="gpt-3.5-turbo",  # Changed from gpt-4 to gpt-3.5-turbo
         messages=[
             {"role": "system", "content": "Take the persona of an expert in all fields and make sure to keep the responses simple and educational"},
-            *st.session_state.chat_hist
+            *[{"role": msg["role"], "content": msg["content"]} for msg in st.session_state.chat_hist]  # Pass the full chat history
         ]
     )
 
-    gpt_response = response.choices[0].message["content"]
+    # Extract the GPT response
+    gpt_response = response.choices[0].message.content
     st.session_state.chat_hist.append({"role": "assistant", "content": gpt_response})
 
-
     # Displaying GPT response
-    with st.chat_message("assistant"): #assitant box and its icon
+    with st.chat_message("assistant"): #assistant box and its icon
         st.markdown(gpt_response)
+            
