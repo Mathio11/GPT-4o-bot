@@ -17,7 +17,7 @@ pip install -r requirements.txt
 
 ## Usage
 
-To run the Streamlit application:
+To run the Streamlit application from the main folder:
 
 ```bash
 streamlit run source/main.py
@@ -41,7 +41,7 @@ The application uses a `config.json` file to store the OpenAI API key. Add your 
 
 ## Acknowledgments
 
-- OpenAI for providing the GPT API
+- OpenAI for GPT API
 - Streamlit team for their amazing framework
 - Contributors of the project
 
